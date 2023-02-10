@@ -1,0 +1,84 @@
+// logger.js
+
+import { httpPost } from "./http.js";
+
+export const logger = (fileName) => (message, options = {}) => {
+
+  let functionName = "-";
+
+  try {
+
+    throw new Error();
+
+  } catch (error) {
+
+    const stack = error.stack || "";
+
+    const match = stack.match(/at (.*)\s+\(/);
+
+    if (match && match.length > 1) {
+
+      functionName = match[1];
+
+    }
+
+  }
+
+  const source = fileName;
+
+  const level = options.level || "INFO";
+
+  const timestamp = options.timestamp || new Date().toISOString();
+
+  const userAgent = options.userAgent || "-";
+
+  const clientIP = options.clientIP || "-";
+
+  const logData = {
+
+    message,
+
+    functionName,
+
+    level,
+
+    source,
+
+    timestamp,
+
+    userAgent,
+
+    clientIP
+
+  };
+
+  try {
+
+    console.log(JSON.stringify(logData));
+
+    httpPost("/api/log", logData);
+
+  } catch (error) {
+
+    console.error(`Error while logging: ${error}`);
+
+  }
+
+};
+
+// auth.js
+
+import { logger } from "./logger.js";
+
+const log = logger("auth.js");
+
+// Example usage:
+
+const login = (username, password) => {
+
+  log("Login attempt", { level: "WARNING", userAgent: "Mozilla/5.0...", clientIP: "127.0.0.1" });
+
+};
+
+login("user", "pass");
+
